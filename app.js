@@ -110,17 +110,16 @@ app.post("/users/", async (request, response) => {
   response.send({ userId: userId });
 });
 
-app.get("/users/:userId/", async (request, response) => {
-  const { userId } = request.params;
+app.get("/usersdata/", async (request, response) => {
   const getUserQuery = `
     SELECT
       *
     FROM
       user_details
-    WHERE
-      user_id = ${userId};`;
-  const userData = await database.get(getUserQuery);
-  response.send(userData);
+    ORDER BY
+      user_id;`;
+  const userDetails = await database.all(getUserQuery);
+  response.send(userDetails);
 });
 
 module.exports = app;
