@@ -50,7 +50,7 @@ app.post("/register", async (request, response) => {
        '${name}',
        '${hashedPassword}',
        '${gender}',
-       '${location}'  
+       '${location}'
       );`;
     if (validatePassword(password)) {
       await database.run(createUserQuery);
@@ -64,6 +64,7 @@ app.post("/register", async (request, response) => {
     response.send("User already exists");
   }
 });
+
 app.post("/login", async (request, response) => {
   const { username, password } = request.body;
   const selectUserQuery = `SELECT * FROM user WHERE username = '${username}';`;
@@ -87,17 +88,18 @@ app.post("/login", async (request, response) => {
 });
 
 app.post("/users/", async (request, response) => {
-  const bookDetails = request.body;
-  // let us assume we have the table named book with title, author_id, and rating as columns
-  const values = bookDetails.map(
-    (user) => `('${user.userId}', ${user.id}, ${user.title},${user.body})`
+  const userDetails = request.body;
+
+  const values = userDetails.map(
+    (user_details) =>
+      `(${user_details.userId}, ${user_details.id}, '${user_details.title}','${user_details.body}')`
   );
 
   const valuesString = values.join(",");
 
   const addUserQuery = `
     INSERT INTO
-      user (user_id,id,title,body)
+      user_details (user_id,id,title,body)
     VALUES
        ${valuesString};`;
 
@@ -112,11 +114,11 @@ app.get("/users/:userId/", async (request, response) => {
     SELECT
       *
     FROM
-      user
+      user_details
     WHERE
       user_id = ${userId};`;
-  const user = await database.get(getUserQuery);
-  response.send(user);
+  const userData = await database.get(getUserQuery);
+  response.send(userData);
 });
 
 module.exports = app;
