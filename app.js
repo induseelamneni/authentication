@@ -86,40 +86,37 @@ app.post("/login", async (request, response) => {
   }
 });
 
-app.put("/change-password", async (request, response) => {
-  const { username, oldPassword, newPassword } = request.body;
-  const selectUserQuery = `SELECT * FROM user WHERE username = '${username}';`;
-  const databaseUser = await database.get(selectUserQuery);
-  if (databaseUser === undefined) {
-    response.status(400);
-    response.send("Invalid user");
-  } else {
-    const isPasswordMatched = await bcrypt.compare(
-      oldPassword,
-      databaseUser.password
-    );
-    if (isPasswordMatched === true) {
-      if (validatePassword(newPassword)) {
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const updatePasswordQuery = `
-          UPDATE
-            user
-          SET
-            password = '${hashedPassword}'
-          WHERE
-            username = '${username}';`;
+app.post("/users/", async (request, response) => {
+  const bookDetails = request.body;
+  // let us assume we have the table named book with title, author_id, and rating as columns
+  const values = bookDetails.map(
+    (user) => `('${user.userId}', ${user.id}, ${user.title},${user.body})`
+  );
 
-        const user = await database.run(updatePasswordQuery);
+  const valuesString = values.join(",");
 
-        response.send("Password updated");
-      } else {
-        response.status(400);
-        response.send("Password is too short");
-      }
-    } else {
-      response.status(400);
-      response.send("Invalid current password");
-    }
-  }
+  const addUserQuery = `
+    INSERT INTO
+      user (user_id,id,title,body)
+    VALUES
+       ${valuesString};`;
+
+  const dbResponse = await database.run(addUserQuery);
+  const userId = dbResponse.lastID;
+  response.send({ userId: userId });
 });
+
+app.get("/users/:userId/", async (request, response) => {
+  const { userId } = request.params;
+  const getUserQuery = `
+    SELECT
+      *
+    FROM
+      user
+    WHERE
+      user_id = ${userId};`;
+  const user = await database.get(getUserQuery);
+  response.send(user);
+});
+
 module.exports = app;
