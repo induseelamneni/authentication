@@ -4,6 +4,7 @@ const sqlite3 = require("sqlite3");
 const path = require("path");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const databasePath = path.join(__dirname, "userData.db");
 
@@ -81,7 +82,9 @@ app.post("/login", async (request, response) => {
       databaseUser.password
     );
     if (isPasswordMatched === true) {
-      response.send("Login success!");
+      const payload = { username: username };
+      const jwtToken = jwt.sign(payload, "dfsgfdgfgdsgf");
+      response.send({ jwtToken });
     } else {
       response.status(400);
       response.send("Invalid password");
@@ -111,15 +114,32 @@ app.post("/users/", async (request, response) => {
 });
 
 app.get("/usersdata/", async (request, response) => {
-  const getUserQuery = `
-    SELECT
-      *
-    FROM
-      user_details
-    ORDER BY
-      user_id;`;
-  const userDetails = await database.all(getUserQuery);
-  response.send(userDetails);
+  let jwtToken;
+  const authHeader = request.headers["authorization"];
+  if (authHeader !== undefined) {
+    jwtToken = authHeader.split(" ")[1];
+  }
+  if (jwtToken === undefined) {
+    response.status(401);
+    response.send("Invalid Access Token");
+  } else {
+    jwt.verify(jwtToken, "dfsgfdgfgdsgf", async (error, user) => {
+      if (error) {
+        response.status(401);
+        response.send("Invalid Access Token");
+      } else {
+        const getUserQuery = `
+                       SELECT
+                          *
+                       FROM
+                         user_details
+                       ORDER BY
+                           user_id;`;
+        const userDetails = await database.all(getUserQuery);
+        response.send(userDetails);
+      }
+    });
+  }
 });
 
 module.exports = app;

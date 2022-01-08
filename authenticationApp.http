@@ -630,3 +630,5 @@ Content-Type:application/json
 
 ###
 GET http://localhost:3001/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImluZHUiLCJpYXQiOjE2NDE2NDEzMDR9.yhRB3OjlOYWJ64_XL3KHM7FHzT8bb8GKZKB87ooOz7o
+
